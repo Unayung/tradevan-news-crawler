@@ -22,15 +22,14 @@ const scraperObject = {
         let dataObj = {};
         let newPage = await browser.newPage();
         await newPage.goto(link);
-        dataObj['date'] = await newPage.$eval('.news_info_date', text => text.textContent);
+        dataObj['created_at'] = await newPage.$eval('.news_info_date', text => text.textContent);
         dataObj['title'] = await newPage.$eval('.news_info_title', text => text.textContent);
-        dataObj['slug'] = `/news/${dataObj['date']}-${dataObj['title']}`;
+        dataObj['slug'] = `/news/${dataObj['created_at']}-${dataObj['title']}`;
         if(await newPage.$('#main .info')){
           // 新格式
-          dataObj['content'] = await newPage.$eval('#main .info', text => text.innerHTML.replace(/(\r\n\t|\n|\r|\t|\&nbsp;\s)/gm, "")
-          );
-          dataObj['content'] = dataObj['content'].replace(/"(data:image\/\w+;base64,.*)"/g, '""');
-
+          dataObj['text_content'] = await newPage.$eval('#main .info', text => text.innerHTML.replace(/(\r\n\t|\n|\r|\t|\&nbsp;\s)/gm, ""));
+          dataObj['text_content'] = dataObj['text_content'].replace(/"(data:image\/\w+;base64,.*)"/g, '""');
+          dataObj['description'] = await newPage.$eval('#main .info', text => text.textContent.replace(/(\r\n\t|\n|\r|\t|\&nbsp;\s|\s)/gm, ""));
           if(await newPage.$('#main .info img')){
             // 新格式圖
             if(await newPage.$eval('#main .info img', img => !img.src.includes('base64'))){
@@ -41,19 +40,25 @@ const scraperObject = {
           }
         }else{
           // 舊格式
-          dataObj['content'] = await newPage.$$eval('#info_right p', paragraphs => {
+          dataObj['text_content'] = await newPage.$$eval('#info_right p', paragraphs => {
             paragraphs = paragraphs.map(el => el.innerHTML.replace(/(\r\n\t|\n|\r|\t|\&nbsp;\s)/gm, "")).join("");
             return paragraphs;
           });
-          dataObj['content'] = dataObj['content'].replace('<a href="/index.do" target="_top">關貿網路</a> &gt; <a href="/index.do" target="_top">訊息公告</a> &gt; <a href="/index.do" target="_top">關貿新聞</a>', '');
-          dataObj['content'] = dataObj['content'].replace('<a href="index.do" target="_top">回列表頁</a>', '');
+          dataObj['description'] = await newPage.$$eval('#info_right p', paragraphs => {
+            paragraphs = paragraphs.map(el => el.textContent.replace(/(\r\n\t|\n|\r|\t|\&nbsp;\s|\s)/gm, "")).join("");
+            return paragraphs;
+          });
+          dataObj['text_content'] = dataObj['text_content'].replace('<a href="/index.do" target="_top">關貿網路</a> &gt; <a href="/index.do" target="_top">訊息公告</a> &gt; <a href="/index.do" target="_top">關貿新聞</a>', '');
+          dataObj['text_content'] = dataObj['text_content'].replace('<a href="index.do" target="_top">回列表頁</a>', '');
           // 舊格式圖
           dataObj['imgs'] = await newPage.$$eval('#info_right p img', imgs => {
             return imgs.map(el => el.src);
           })
         }
-
+        dataObj['description'] = dataObj['description'].substring(0, 100);
+        dataObj['imgs'] = [...new Set(dataObj['imgs'])]
         dataObj['category'] = 'news';
+
         // dataObj['noAvailable'] = await newPage.$eval('.instock.availability', text => {
           // Strip new line and tab spaces
           // text = text.textContent.replace(/(\r\n\t|\n|\r|\t)/gm, "");
