@@ -24,6 +24,7 @@ const scraperObject = {
         await newPage.goto(link);
         dataObj['date'] = await newPage.$eval('.news_info_date', text => text.textContent);
         dataObj['title'] = await newPage.$eval('.news_info_title', text => text.textContent);
+        dataObj['slug'] = `/news/${dataObj['date']}-${dataObj['title']}`;
         if(await newPage.$('#main .info')){
           // 新格式
           dataObj['content'] = await newPage.$eval('#main .info', text => text.innerHTML.replace(/(\r\n\t|\n|\r|\t|\&nbsp;\s)/gm, "")
