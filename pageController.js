@@ -5,7 +5,7 @@ async function scrapeAll(browserInstance){
 	try{
 		browser = await browserInstance;
     let scrapedData = {};
-		scrapedData = await pageScraper.scraper(browser, false);
+		scrapedData = await pageScraper.scraper(browser, true);
     await browser.close();
     fs.writeFile("data.json", JSON.stringify(scrapedData), 'utf8', function(err) {
       if(err) {

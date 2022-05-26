@@ -58,7 +58,7 @@ const scraperObject = {
         dataObj['description'] = dataObj['description'].substring(0, 100);
         dataObj['imgs'] = [...new Set(dataObj['imgs'])]
         dataObj['category'] = 'news';
-
+        dataObj['unit_id'] = '1';
         // dataObj['noAvailable'] = await newPage.$eval('.instock.availability', text => {
           // Strip new line and tab spaces
           // text = text.textContent.replace(/(\r\n\t|\n|\r|\t)/gm, "");
