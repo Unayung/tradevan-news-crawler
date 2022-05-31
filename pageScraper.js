@@ -24,7 +24,10 @@ const scraperObject = {
         await newPage.goto(link);
         dataObj['created_at'] = await newPage.$eval('.news_info_date', text => text.textContent);
         dataObj['title'] = await newPage.$eval('.news_info_title', text => text.textContent);
-        dataObj['slug'] = `/news/${dataObj['created_at']}-${dataObj['title']}`;
+        let slug = dataObj['title']
+        slug = slug.replace(/\%/g, '').trim();
+        slug = slug.replace(/\//g, '').trim();
+        dataObj['slug'] = `/news/${dataObj['created_at']}-${slug}`;
         if(await newPage.$('#main .info')){
           // 新格式
           dataObj['text_content'] = await newPage.$eval('#main .info', text => text.innerHTML.replace(/(\r\n\t|\n|\r|\t|\&nbsp;\s)/gm, ""));
